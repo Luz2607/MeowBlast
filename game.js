@@ -1,138 +1,138 @@
 /* =========================================================
    MeowBlast – + Rebind de teclas + Logros + Tienda
    (persiste en localStorage y no rompe tu lógica base)
-========================================================= */
+========================================================= */ // Cabecera descriptiva del módulo: funcionalidades extra y persistencia
 
-/* ---------- UI refs ---------- */
-const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
-const stage = document.getElementById('stage');
+/* ---------- UI refs ---------- */ // Referencias a elementos del DOM usados por el juego
+const canvas = document.getElementById('game'), ctx = canvas.getContext('2d'); // Canvas principal y su contexto 2D
+const stage = document.getElementById('stage'); // Contenedor del escenario para overlays/controles
 
-const hudLives = document.getElementById('lives');
-const hudLevel = document.getElementById('level');
-const hudMice  = document.getElementById('mice');
-const hudMiceMax = document.getElementById('miceMax');
-const hudRange = document.getElementById('range');
-const hudSpeed = document.getElementById('speed');
-const hudTime  = document.getElementById('time');
-const hudCoins = document.getElementById('coins');
+const hudLives = document.getElementById('lives'); // HUD: vidas
+const hudLevel = document.getElementById('level'); // HUD: nivel actual
+const hudMice  = document.getElementById('mice'); // HUD: bombas colocadas
+const hudMiceMax = document.getElementById('miceMax'); // HUD: bombas máximas
+const hudRange = document.getElementById('range'); // HUD: rango de explosión
+const hudSpeed = document.getElementById('speed'); // HUD: velocidad del gato
+const hudTime  = document.getElementById('time'); // HUD: tiempo restante
+const hudCoins = document.getElementById('coins'); // HUD: monedas (sardinas)
 
-const btnPause = document.getElementById('btnPause');
-const btnRestart = document.getElementById('btnRestart');
-const btnThemeDark = document.getElementById('btnThemeDark');
-const btnThemeLight = document.getElementById('btnThemeLight');
+const btnPause = document.getElementById('btnPause'); // Botón Pausa
+const btnRestart = document.getElementById('btnRestart'); // Botón Reiniciar
+const btnThemeDark = document.getElementById('btnThemeDark'); // Cambiar a tema oscuro
+const btnThemeLight = document.getElementById('btnThemeLight'); // Cambiar a tema claro
 
-const btnControls = document.getElementById('btnControls');
-const btnAchievements = document.getElementById('btnAchievements');
+const btnControls = document.getElementById('btnControls'); // Abrir modal de controles (rebind)
+const btnAchievements = document.getElementById('btnAchievements'); // Abrir modal de logros
 
-const modalPauseEl = document.getElementById('modalPause');
-const modalLevelClearEl = document.getElementById('modalLevelClear');
-const modalFinishEl = document.getElementById('modalFinish');
-const modalShopEl = document.getElementById('modalShop');
-const modalControlsEl = document.getElementById('modalControls');
-const modalAchievementsEl = document.getElementById('modalAchievements');
+const modalPauseEl = document.getElementById('modalPause'); // Modal Pausa (elemento)
+const modalLevelClearEl = document.getElementById('modalLevelClear'); // Modal Nivel superado (elemento)
+const modalFinishEl = document.getElementById('modalFinish'); // Modal Resumen final (elemento)
+const modalShopEl = document.getElementById('modalShop'); // Modal Tienda (elemento)
+const modalControlsEl = document.getElementById('modalControls'); // Modal Controles (elemento)
+const modalAchievementsEl = document.getElementById('modalAchievements'); // Modal Logros (elemento)
 
-const levelStatsEl = document.getElementById('levelStats');
-const finalStatsEl = document.getElementById('finalStats');
-const finishTitleEl = document.getElementById('finishTitle');
+const levelStatsEl = document.getElementById('levelStats'); // Contenedor de estadísticas por nivel
+const finalStatsEl = document.getElementById('finalStats'); // Contenedor de estadísticas finales
+const finishTitleEl = document.getElementById('finishTitle'); // Título del modal de fin de partida
 
-const banner = document.getElementById('banner');
-const bannerText = document.getElementById('bannerText');
+const banner = document.getElementById('banner'); // Banner superior animado (mensajes nivel/estado)
+const bannerText = document.getElementById('bannerText'); // Texto dentro del banner
 
-const shopCoinsEl = document.getElementById('shopCoins');
+const shopCoinsEl = document.getElementById('shopCoins'); // Saldo de sardinas (tienda)
 
-const controlsListEl = document.getElementById('controlsList');
-const btnRestoreKeys = document.getElementById('btnRestoreKeys');
-const achListEl = document.getElementById('achList');
+const controlsListEl = document.getElementById('controlsList'); // Lista de acciones para rebind
+const btnRestoreKeys = document.getElementById('btnRestoreKeys'); // Botón restaurar teclas por defecto
+const achListEl = document.getElementById('achList'); // Contenedor de tarjetas de logros
 
-/* Volumen & toggles */
-const btnMute = document.getElementById('btnMute');
-const volRange = document.getElementById('volRange');
-const chkReduce = document.getElementById('chkReduceMotion');
+/* Volumen & toggles */ // Controles de audio y accesibilidad
+const btnMute = document.getElementById('btnMute'); // Botón mute/unmute
+const volRange = document.getElementById('volRange'); // Slider de volumen
+const chkReduce = document.getElementById('chkReduceMotion'); // Checkbox reducir animaciones
 
-/* Minimapa */
-const mini = document.getElementById('minimap');
-const mctx = mini.getContext('2d');
+/* Minimapa */ // Canvas del minimapa
+const mini = document.getElementById('minimap'); // Canvas minimapa
+const mctx = mini.getContext('2d'); // Contexto 2D minimapa
 
-/* Táctil */
-const touchControls = document.getElementById('touchControls');
-const dpad = document.getElementById('dpad');
-const btnBomb = document.getElementById('btnBomb');
-const btnTPause = document.getElementById('btnTPause');
+/* Táctil */ // Controles para dispositivos móviles (D-Pad y acciones)
+const touchControls = document.getElementById('touchControls'); // Contenedor de controles táctiles
+const dpad = document.getElementById('dpad'); // D-Pad (flechas)
+const btnBomb = document.getElementById('btnBomb'); // Botón táctil para poner bomba
+const btnTPause = document.getElementById('btnTPause'); // Botón táctil para pausar
 
-/* ---------- Modales Bootstrap ---------- */
-const PauseModal = new bootstrap.Modal(modalPauseEl, {backdrop:'static', keyboard:false});
-const LevelModal = new bootstrap.Modal(modalLevelClearEl, {backdrop:'static', keyboard:false});
-const FinishModal = new bootstrap.Modal(modalFinishEl, {backdrop:'static', keyboard:false});
-const ShopModal = new bootstrap.Modal(modalShopEl, {backdrop:'static', keyboard:false});
-const ControlsModal = new bootstrap.Modal(modalControlsEl, {backdrop:'static', keyboard:false});
-const AchModal = new bootstrap.Modal(modalAchievementsEl, {backdrop:'static', keyboard:false});
+/* ---------- Modales Bootstrap ---------- */ // Instancias de modales Bootstrap con opciones
+const PauseModal = new bootstrap.Modal(modalPauseEl, {backdrop:'static', keyboard:false}); // Modal Pausa sin cerrar con fondo/esc
+const LevelModal = new bootstrap.Modal(modalLevelClearEl, {backdrop:'static', keyboard:false}); // Modal Nivel superado
+const FinishModal = new bootstrap.Modal(modalFinishEl, {backdrop:'static', keyboard:false}); // Modal Final
+const ShopModal = new bootstrap.Modal(modalShopEl, {backdrop:'static', keyboard:false}); // Modal Tienda
+const ControlsModal = new bootstrap.Modal(modalControlsEl, {backdrop:'static', keyboard:false}); // Modal Controles
+const AchModal = new bootstrap.Modal(modalAchievementsEl, {backdrop:'static', keyboard:false}); // Modal Logros
 
-/* ---------- Helpers & Const ---------- */
-const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-const dir4=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}];
-const TILE=48, FUSE_MS=2000, EXP_MS=520;
+/* ---------- Helpers & Const ---------- */ // Utilidades y constantes globales
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v)); // Limita un valor entre min y max
+const dir4=[{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]; // Direcciones cardinales (derecha, izquierda, abajo, arriba)
+const TILE=48, FUSE_MS=2000, EXP_MS=520; // Tamaño de celda, tiempo de mecha, y duración explosión
 
-/* ---------- Preferencias (persistencia) ---------- */
-const PREFS_KEY = 'meowblast_prefs_v2';
-const DEFAULT_KEYMAP = {
+/* ---------- Preferencias (persistencia) ---------- */ // Manejo de preferencias en localStorage
+const PREFS_KEY = 'meowblast_prefs_v2'; // Clave de almacenamiento local
+const DEFAULT_KEYMAP = { // Mapeo por defecto de teclas de usuario
   up:'arrowup', down:'arrowdown', left:'arrowleft', right:'arrowright',
   place:'z', pause:'p', confirm:'x'
 };
-const DEFAULT_ACH = {
+const DEFAULT_ACH = { // Estado inicial de logros (todos sin desbloquear)
   firstBlood:false, demolisher:false, speedRunner:false, pacifist:false, survivor:false, sardineCombo:false
 };
 
-function loadPrefs(){
+function loadPrefs(){ // Carga preferencias desde localStorage (o objeto vacío si no hay)
   try{ return JSON.parse(localStorage.getItem(PREFS_KEY)) || {}; } catch { return {}; }
 }
-function savePrefs(p){ localStorage.setItem(PREFS_KEY, JSON.stringify(p)); }
+function savePrefs(p){ localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } // Guarda preferencias en localStorage
 
-const prefs = Object.assign({
-  theme: document.documentElement.getAttribute('data-bs-theme')||'dark',
-  volume:0.8, muted:false, reduce:false,
-  keymap: DEFAULT_KEYMAP,
-  achievements: DEFAULT_ACH
+const prefs = Object.assign({ // Prefs por defecto + las guardadas previamente
+  theme: document.documentElement.getAttribute('data-bs-theme')||'dark', // Tema inicial (del html o 'dark')
+  volume:0.8, muted:false, reduce:false, // Audio y accesibilidad
+  keymap: DEFAULT_KEYMAP, // Teclas
+  achievements: DEFAULT_ACH // Logros
 }, loadPrefs());
 
-/* Aplica preferencias iniciales */
-document.documentElement.setAttribute('data-bs-theme', prefs.theme);
-volRange.value = Math.round((prefs.volume||0.8)*100);
-btnMute.textContent = prefs.muted ? '🔇' : '🔊';
-chkReduce.checked = !!prefs.reduce;
-document.body.classList.toggle('reduce-motion', !!prefs.reduce);
+/* Aplica preferencias iniciales */ // Sincroniza UI con prefs al cargar
+document.documentElement.setAttribute('data-bs-theme', prefs.theme); // Aplica tema
+volRange.value = Math.round((prefs.volume||0.8)*100); // Slider volumen (0–100)
+btnMute.textContent = prefs.muted ? '🔇' : '🔊'; // Ícono mute según estado
+chkReduce.checked = !!prefs.reduce; // Checkbox reducir animaciones
+document.body.classList.toggle('reduce-motion', !!prefs.reduce); // Clase CSS para reducir transiciones
 
-/* Detecta prefers-reduced-motion */
+/* Detecta prefers-reduced-motion */ // Respeta preferencia del SO si el usuario la tiene activada
 try{
-  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if(mq.matches && prefs.reduce !== true){
-    prefs.reduce = true; chkReduce.checked = true; document.body.classList.add('reduce-motion'); savePrefs(prefs);
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)'); // Media query de accesibilidad
+  if(mq.matches && prefs.reduce !== true){ // Si el SO pide reducir y no lo teníamos activo
+    prefs.reduce = true; chkReduce.checked = true; document.body.classList.add('reduce-motion'); savePrefs(prefs); // Activa y guarda
   }
-} catch {}
+} catch {} // Silencia errores en entornos sin matchMedia
 
-/* ---------- Hi-DPI scaling ---------- */
+/* ---------- Hi-DPI scaling ---------- */ // Ajusta el canvas para pantallas con alta densidad (retina)
 function setupHiDPI(){
-  const dpr = window.devicePixelRatio || 1;
-  const cssW = 624, cssH = 528;
-  canvas.style.width = cssW+'px';
+  const dpr = window.devicePixelRatio || 1; // Factor de escala del dispositivo
+  const cssW = 624, cssH = 528; // Tamaño CSS deseado (coincide con HTML)
+  canvas.style.width = cssW+'px'; // Fija tamaño visual
   canvas.style.height = cssH+'px';
-  canvas.width = Math.floor(cssW * dpr);
+  canvas.width = Math.floor(cssW * dpr); // Ajusta resolución interna por DPR
   canvas.height = Math.floor(cssH * dpr);
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.setTransform(dpr,0,0,dpr,0,0); // Escala el contexto para dibujar en “píxeles lógicos”
 }
-setupHiDPI();
+setupHiDPI(); // Ejecuta el escalado Hi-DPI al inicio
 
-/* ---------- Tema dinámico ---------- */
-function themeColorsFor(level){
-  const sets = [
+/* ---------- Tema dinámico ---------- */ // Paletas y colores dependientes del nivel/tema claro-oscuro
+function themeColorsFor(level){ // Devuelve set de colores según nivel y tema
+  const sets = [ // Variantes de piso y patrones por nivel
     { floor1:'#143252', floor2:'#0d2440', pattern:'stripes' },
     { floor1:'#1e3a2f', floor2:'#0f261d', pattern:'dots' },
     { floor1:'#392641', floor2:'#24182c', pattern:'diag' },
     { floor1:'#3a2f1e', floor2:'#251b12', pattern:'grid' },
     { floor1:'#242d3a', floor2:'#0f1621', pattern:'hex' },
   ];
-  const base = sets[level % sets.length];
-  const dark = document.documentElement.getAttribute('data-bs-theme')!=='light';
-  const commonDark = {
+  const base = sets[level % sets.length]; // Selección por nivel cíclico
+  const dark = document.documentElement.getAttribute('data-bs-theme')!=='light'; // ¿Tema oscuro?
+  const commonDark = { // Colores comunes para tema oscuro
     solid:'#5b6778', soft:'#c08a3b', softEdge:'#7a5520',
     expl:'#ff6b3d', door:'#22d3ee', doorGlow:'#22d3ee55',
     cat:'#f4a261', cat2:'#e76f51', eye:'#1b1b1b',
@@ -140,7 +140,7 @@ function themeColorsFor(level){
     mouse:'#ef4444', mouse2:'#ff7b7b', tail:'#fb7185',
     sardBlue:'#00d4ff', sardPurple:'#c084fc', sardGreen:'#7ee787'
   };
-  const commonLight = {
+  const commonLight = { // Colores comunes para tema claro
     solid:'#9aa7bb', soft:'#e4b469', softEdge:'#b07b2e',
     expl:'#f97353', door:'#0ea5e9', doorGlow:'#0ea5e955',
     cat:'#f4a261', cat2:'#e76f51', eye:'#1b1b1b',
@@ -148,126 +148,126 @@ function themeColorsFor(level){
     mouse:'#ef4444', mouse2:'#f87171', tail:'#fb7185',
     sardBlue:'#0ea5e9', sardPurple:'#a78bfa', sardGreen:'#22c55e'
   };
-  return dark ? {...base, ...commonDark} : {...base, ...commonLight};
+  return dark ? {...base, ...commonDark} : {...base, ...commonLight}; // Mezcla base+tema
 }
-let C = themeColorsFor(0);
-(new MutationObserver(()=>{ C = themeColorsFor(G.level); })).observe(document.documentElement,{attributes:true,attributeFilter:['data-bs-theme']});
+let C = themeColorsFor(0); // Paleta inicial (nivel 0)
+(new MutationObserver(()=>{ C = themeColorsFor(G.level); })) // Observa cambios de atributo de tema para refrescar colores
+  .observe(document.documentElement,{attributes:true,attributeFilter:['data-bs-theme']});
 
-/* ---------- Input teclado + REBIND ---------- */
-const keys=new Set(); const tapped=new Set();
-let _rebindAction = null; // acción esperando tecla
+/* ---------- Input teclado + REBIND ---------- */ // Gestión de teclado y reasignación de teclas
+const keys=new Set(); const tapped=new Set(); // Conjuntos de teclas presionadas y “tapped” (una sola vez)
+let _rebindAction = null; // Acción pendiente de reasignación (esperando tecla)
 
-function normKey(k){ return (k||'').toLowerCase(); }
+function normKey(k){ return (k||'').toLowerCase(); } // Normaliza a minúsculas
 
-window.addEventListener('keydown',e=>{
-  const k = normKey(e.key);
+window.addEventListener('keydown',e=>{ // Evento presionar tecla
+  const k = normKey(e.key); // Tecla normalizada
   // rebind: captura y guarda
   if(_rebindAction){
-    e.preventDefault();
+    e.preventDefault(); // Evita comportamiento por defecto
     // evita duplicados: si misma tecla ya está asignada a otra acción, la liberamos
     for(const act of Object.keys(prefs.keymap)){
-      if(act!==_rebindAction && prefs.keymap[act]===k) prefs.keymap[act]=null;
+      if(act!==_rebindAction && prefs.keymap[act]===k) prefs.keymap[act]=null; // Desasigna duplicados
     }
-    prefs.keymap[_rebindAction]=k; savePrefs(prefs);
-    renderControlsList();
-    _rebindAction=null;
-    return;
+    prefs.keymap[_rebindAction]=k; savePrefs(prefs); // Asigna y guarda
+    renderControlsList(); // Refresca la lista en el modal
+    _rebindAction=null; // Sale de modo rebind
+    return; // No procesa como input de juego
   }
 
   // bloquear scroll
-  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+  if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault(); // Evita que flechas/espacio hagan scroll
 
   // Traducción: teclas de usuario -> teclas internas
-  if(k===prefs.keymap.up) keys.add('arrowup');
-  if(k===prefs.keymap.down) keys.add('arrowdown');
+  if(k===prefs.keymap.up) keys.add('arrowup'); // Mapea “up” personalizado a arrowup
+  if(k===prefs.keymap.down) keys.add('arrowdown'); // …
   if(k===prefs.keymap.left) keys.add('arrowleft');
   if(k===prefs.keymap.right) keys.add('arrowright');
-  if(k===prefs.keymap.place) keys.add('z');
-  if(k===prefs.keymap.pause) togglePause();
-  if(k===prefs.keymap.confirm) modalConfirm();
+  if(k===prefs.keymap.place) keys.add('z'); // Acción colocar bomba
+  if(k===prefs.keymap.pause) togglePause(); // Pausar juego
+  if(k===prefs.keymap.confirm) modalConfirm(); // Confirmación (usada en modales)
 
   // Soporta también las clásicas (no molesta rebind)
-  keys.add(k);
+  keys.add(k); // También agrega la tecla cruda (compatibilidad)
 });
 
-window.addEventListener('keyup',e=>{
-  const k = normKey(e.key);
-  keys.delete(k); tapped.delete(k);
-  if(k===prefs.keymap.up) keys.delete('arrowup');
+window.addEventListener('keyup',e=>{ // Evento soltar tecla
+  const k = normKey(e.key); // Normaliza
+  keys.delete(k); tapped.delete(k); // Libera en los sets
+  if(k===prefs.keymap.up) keys.delete('arrowup'); // Limpia los mapeos internos
   if(k===prefs.keymap.down) keys.delete('arrowdown');
   if(k===prefs.keymap.left) keys.delete('arrowleft');
   if(k===prefs.keymap.right) keys.delete('arrowright');
   if(k===prefs.keymap.place) keys.delete('z');
 });
 
-const keyPressed=(list)=>list.some(k=>keys.has(k));
-const keyTap=(k)=>{ if(keys.has(k)&&!tapped.has(k)){ tapped.add(k); return true; } return false; };
+const keyPressed=(list)=>list.some(k=>keys.has(k)); // Verdadero si alguna tecla de la lista está presionada
+const keyTap=(k)=>{ if(keys.has(k)&&!tapped.has(k)){ tapped.add(k); return true; } return false; }; // Detección de “tap” (una vez)
 
-/* ---------- WebAudio SFX con master gain ---------- */
+/* ---------- WebAudio SFX con master gain ---------- */ // Generador de sonidos simples con Oscillator
 class SFX{
-  constructor(){ this.ctx=null; this.master=null; this._vol=clamp(prefs.volume??0.8,0,1); this._muted=!!prefs.muted; }
+  constructor(){ this.ctx=null; this.master=null; this._vol=clamp(prefs.volume??0.8,0,1); this._muted=!!prefs.muted; } // Inicializa volúmenes
   ensure(){
     if(!this.ctx){
-      this.ctx=new (window.AudioContext||window.webkitAudioContext)();
-      this.master=this.ctx.createGain(); this.master.gain.value=this._muted?0:this._vol;
-      this.master.connect(this.ctx.destination);
+      this.ctx=new (window.AudioContext||window.webkitAudioContext)(); // Crea contexto de audio
+      this.master=this.ctx.createGain(); this.master.gain.value=this._muted?0:this._vol; // Ganancia maestra
+      this.master.connect(this.ctx.destination); // Conecta a salida
     }
   }
-  setVolume(v){ this._vol=clamp(v,0,1); if(this.master) this.master.gain.value=this._muted?0:this._vol; }
-  setMuted(m){ this._muted=!!m; if(this.master) this.master.gain.value=this._muted?0:this._vol; }
-  blip(f1,f2,t=0.12,type='sine',gain=0.06){
-    this.ensure(); const o=this.ctx.createOscillator(), g=this.ctx.createGain();
-    o.type=type; o.frequency.value=f1; const now=this.ctx.currentTime;
-    o.frequency.linearRampToValueAtTime(f2, now+t*0.8);
-    g.gain.value=gain; g.gain.exponentialRampToValueAtTime(0.0001, now+t);
-    o.connect(g).connect(this.master); o.start(); o.stop(now+t);
+  setVolume(v){ this._vol=clamp(v,0,1); if(this.master) this.master.gain.value=this._muted?0:this._vol; } // Ajusta volumen master
+  setMuted(m){ this._muted=!!m; if(this.master) this.master.gain.value=this._muted?0:this._vol; } // Mute on/off
+  blip(f1,f2,t=0.12,type='sine',gain=0.06){ // Genera un “blip” paramétrico
+    this.ensure(); const o=this.ctx.createOscillator(), g=this.ctx.createGain(); // Oscilador + ganancia
+    o.type=type; o.frequency.value=f1; const now=this.ctx.currentTime; // Tipo y frecuencia inicial
+    o.frequency.linearRampToValueAtTime(f2, now+t*0.8); // Barrido de frecuencia
+    g.gain.value=gain; g.gain.exponentialRampToValueAtTime(0.0001, now+t); // Decaimiento exponencial
+    o.connect(g).connect(this.master); o.start(); o.stop(now+t); // Conexión y ciclo de vida
   }
-  place(){ this.blip(520,440,0.1,'square',0.06); }
-  explode(){ this.blip(160,60,0.22,'sawtooth',0.09); }
-  pickup(){ this.blip(660,880,0.12,'triangle',0.06); }
-  hit(){ this.blip(220,140,0.14,'square',0.08); }
-  win(){ this.blip(740,980,0.18,'triangle',0.07); }
-  lose(){ this.blip(200,80,0.3,'sawtooth',0.09); }
-  ui(){ this.blip(440,520,0.08,'triangle',0.05); }
+  place(){ this.blip(520,440,0.1,'square',0.06); } // SFX colocar bomba
+  explode(){ this.blip(160,60,0.22,'sawtooth',0.09); } // SFX explosión
+  pickup(){ this.blip(660,880,0.12,'triangle',0.06); } // SFX recoger item
+  hit(){ this.blip(220,140,0.14,'square',0.08); } // SFX golpe/daño
+  win(){ this.blip(740,980,0.18,'triangle',0.07); } // SFX victoria
+  lose(){ this.blip(200,80,0.3,'sawtooth',0.09); } // SFX derrota
+  ui(){ this.blip(440,520,0.08,'triangle',0.05); } // SFX interfaz
 }
-const S = new SFX();
+const S = new SFX(); // Instancia global de sonidos
 
-/* ---------- Estado Global ---------- */
-const INIT_TIME=180;
-const G={
-  level:0,lives:3,maxMice:1,speed:1.0,range:2,
-  paused:false,ended:false,stats:[], timeLeft:INIT_TIME,
+/* ---------- Estado Global ---------- */ // Variables de estado de la partida
+const INIT_TIME=180; // Tiempo inicial por nivel
+const G={ // Objeto de estado global del juego
+  level:0,lives:3,maxMice:1,speed:1.0,range:2, // Parámetros del jugador
+  paused:false,ended:false,stats:[], timeLeft:INIT_TIME, // Flags, estadísticas y tiempo
   coins:0,                // 🐟 acumuladas (sardinas recogidas)
   lvlDogKills:0,         // para logros de nivel
   lvlSardines:0,
   lvlBlocks:0
 };
 
-/* ---------- Gamepad ---------- */
-let _gpLast = 0;
-function pollGamepad(now){
-  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-  let gp = null;
+/* ---------- Gamepad ---------- */ // Soporte básico de gamepad (ejes y botones)
+let _gpLast = 0; // Timestamp del último pulso de entrada
+function pollGamepad(now){ // Revisión periódica del estado del gamepad
+  const pads = navigator.getGamepads ? navigator.getGamepads() : []; // Lee gamepads
+  let gp = null; // Selecciona el primero conectado
   for(const p of pads){ if(p && p.connected){ gp=p; break; } }
-  if(!gp) return;
-  const dt = now - (_gpLast||0);
-  const step = 150;
-  const axX = gp.axes[0]||0, axY = gp.axes[1]||0;
-  const btn = (i)=>gp.buttons[i] && gp.buttons[i].pressed;
-  const dUp=btn(12), dDown=btn(13), dLeft=btn(14), dRight=btn(15);
-  const aUp=axY<-0.5, aDown=axY>0.5, aLeft=axX<-0.5, aRight=axX>0.5;
-  if(dt>step){
+  if(!gp) return; // Si no hay, salimos
+  const dt = now - (_gpLast||0); // Delta de tiempo desde último pulso
+  const step = 150; // Intervalo mínimo entre pasos (ms)
+  const axX = gp.axes[0]||0, axY = gp.axes[1]||0; // Ejes analógicos principales
+  const btn = (i)=>gp.buttons[i] && gp.buttons[i].pressed; // Helper: botón presionado
+  const dUp=btn(12), dDown=btn(13), dLeft=btn(14), dRight=btn(15); // D-Pad digital
+  const aUp=axY<-0.5, aDown=axY>0.5, aLeft=axX<-0.5, aRight=axX>0.5; // Umbral de ejes
+  if(dt>step){ // Si pasó el tiempo mínimo, inyecta “pulsos” de flechas
     if(dUp||aUp) keys.add('arrowup');
     if(dDown||aDown) keys.add('arrowdown');
     if(dLeft||aLeft) keys.add('arrowleft');
     if(dRight||aRight) keys.add('arrowright');
-    _gpLast = now;
-    setTimeout(()=>{ keys.delete('arrowup'); keys.delete('arrowdown'); keys.delete('arrowleft'); keys.delete('arrowright'); }, 60);
+    _gpLast = now; // Actualiza marca
+    setTimeout(()=>{ keys.delete('arrowup'); keys.delete('arrowdown'); keys.delete('arrowleft'); keys.delete('arrowright'); }, 60); // Libera después de 60ms
   }
-  if(btn(0)) { keys.add('z'); setTimeout(()=>keys.delete('z'), 60); }   // A = bomba
+  if(btn(0)) { keys.add('z'); setTimeout(()=>keys.delete('z'), 60); }   // A = bomba (tap corto)
   if(btn(9)) { togglePause(); }                                        // START = pausa
 }
-
 /* ---------- Niveles (idénticos) ---------- */
 const LEVELS=[
   { time:180,start:{c:1,r:1},door:{c:10,r:9},
